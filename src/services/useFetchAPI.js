@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 function useFetchAPI() {
   const [planetsList, setPlanetsList] = useState([]);
+  const [listSource, setListSource] = useState([]);
 
   useEffect(() => {
     const getPlanets = async () => {
@@ -11,6 +12,7 @@ function useFetchAPI() {
 
         const filterPlanets = results.filter((result) => delete result.residents);
         setPlanetsList(filterPlanets);
+        setListSource(filterPlanets);
       } catch (error) {
         console.log(error.message);
       }
@@ -18,7 +20,7 @@ function useFetchAPI() {
     getPlanets();
   }, []);
 
-  return { planetsList, setPlanetsList };
+  return { planetsList, setPlanetsList, listSource };
 }
 
 export default useFetchAPI;

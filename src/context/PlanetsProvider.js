@@ -1,72 +1,107 @@
-/* eslint-disable react/jsx-no-constructed-context-values */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import MyContext from './MyContext';
 import useFetchAPI from '../services/useFetchAPI';
 
 function PlanetsProvider({ children }) {
-  const { planetsList, setPlanetsList, getPlanets } = useFetchAPI();
+  const { planetsList, setPlanetsList, getPlanets, listSource } = useFetchAPI();
 
-  const [filterPlanetsByName, setFilterPlanetsByName] = useState('');
+  const [filterPlanetsByName, setFilterPlanetsByName] = useState([]);
 
-  const [filterColumn, setFilterColumn] = useState('population');
+  const [filterColumn, setFilterColumn] = useState([
+    'population',
+    'orbital_period',
+    'diameter',
+    'rotation_period',
+    'surface_water',
+  ]);
 
   const [filterComparison, setFilterComparison] = useState('maior que');
 
-  const [filterValue, setFilterValue] = useState(0);
+  const [values, setValues] = useState(0);
 
-  const [filterByNumericValues, setFilterByNumericValues] = useState([]);
+  const [filterByNumericValue, setFilterByNumericValue] = useState({
+    column: filterColumn[0],
+    comparison: 'maior que',
+    numericValue: 0,
+  });
 
-  const allFilters = () => {
-    setFilterByNumericValues(
-      filterByNumericValues.concat({
-        column,
-        comparison,
-        value: filterValue,
-      }),
-    );
-  };
+  // const allFilters = () => {
+  //   setFilterByNumericValues(
+  //     filterByNumericValues.concat({
+  //       column,
+  //       comparison,
+  //       value: filterValue,
+  //     }),
+  //   );
+  // };
+
+  const [allFilters, setAllFilters] = useState([]);
 
   const filteredPlanets = filterPlanetsByName.length > 0 ? planetsList
     .filter((planet) => planet.name.includes(filterPlanetsByName)) : planetsList;
 
-  const handleNamePlanets = ({ target: { value } }) => {
-    setFilterPlanetsByName(value);
-  };
+  const handlePlanetsByName = useMemo(
+    () => (
+      { target: { value } },
+    ) => setFilterPlanetsByName(value),
+    [],
+  );
 
-  const handleColumn = ({ target: { value } }) => {
-    setFilterColumn(value);
-  };
+  const handleAllFilters = useMemo(
+    () => (
+      { target: { name, value } },
+    ) => setFilterByNumericValue(
+      { ...filterByNumericValue, [name]: value },
+    ),
+    [filterByNumericValue],
+  );
 
-  const handleComparison = ({ target: { value } }) => {
-    setFilterComparison(value);
-  };
-
-  const handleValue = ({ target: { value } }) => {
-    setFilterValue(value);
-  };
-
-  const context = {
+  const memoItems = useMemo(() => ({
     planetsList,
     getPlanets,
     setPlanetsList,
     filterPlanetsByName,
     setFilterPlanetsByName,
     filteredPlanets,
-    handleNamePlanets,
+    handlePlanetsByName,
     allFilters,
+    setAllFilters,
     filterColumn,
-    handleColumn,
+    setFilterColumn,
     filterComparison,
-    handleComparison,
-    filterValue,
-    handleValue,
-    filterByNumericValues,
-    setFilterByNumericValues,
-  };
+    setFilterComparison,
+    values,
+    setValues,
+    filterByNumericValue,
+    setFilterByNumericValue,
+    handleAllFilters,
+    listSource,
+  }
+  ), [
+    planetsList,
+    getPlanets,
+    setPlanetsList,
+    filterPlanetsByName,
+    setFilterPlanetsByName,
+    filteredPlanets,
+    handlePlanetsByName,
+    allFilters,
+    setAllFilters,
+    filterColumn,
+    setFilterColumn,
+    filterComparison,
+    setFilterComparison,
+    values,
+    setValues,
+    filterByNumericValue,
+    setFilterByNumericValue,
+    handleAllFilters,
+    listSource,
+  ]);
 
   return (
-    <MyContext.Provider value={ context }>
+    <MyContext.Provider value={ memoItems }>
       { children }
     </MyContext.Provider>
   );
@@ -75,5 +110,7 @@ function PlanetsProvider({ children }) {
 PlanetsProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
+
+// Refeito
 
 export default PlanetsProvider;
